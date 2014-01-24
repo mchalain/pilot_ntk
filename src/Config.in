@@ -1,0 +1,15 @@
+config PILOT_NTK
+	bool "network toolkit"
+	depends on PILOT
+
+config PILOT_NTK_TCP
+	bool "TCP network protocol support"
+	depends on PILOT_NTK
+
+config PILOT_NTK_UDP
+	bool "UDP network protocol support"
+	depends on PILOT_NTK
+
+config PILOT_NTK_LOCAL
+	bool "UNIX Local network protocol support"
+	depends on PILOT_NTK
