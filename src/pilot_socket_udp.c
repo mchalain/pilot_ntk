@@ -21,6 +21,12 @@ static int
 _pilot_server_udp_wait( struct pilot_server_udp *thiz);
 static int
 _pilot_socket_udp_connect( struct pilot_socket_udp *thiz);
+static int
+_pilot_socket_udp_disconnect( struct pilot_socket *thiz);
+static int
+_pilot_socket_udp_read(struct pilot_socket *thiz, char *buff, int size);
+static int
+_pilot_socket_udp_write(struct pilot_socket *thiz, char *buff, int size);
 
 struct pilot_server_udp *
 pilot_server_udp_create(struct pilot_application *application, int port)
@@ -33,6 +39,10 @@ pilot_server_udp_create(struct pilot_application *application, int port)
 	_pilot_socket_init(socket, application, PILOT_SERVER_UDP);
 	thiz->port = port;
 	thiz->address = NULL;
+	thiz->socket.action.disconnect = _pilot_socket_udp_disconnect;
+	/// in UDP the server socket is used to read and write to the client
+	thiz->socket.action.read = _pilot_socket_udp_read;
+	thiz->socket.action.write = _pilot_socket_udp_write;
 
 	_pilot_socket_open((struct pilot_socket *)thiz);
 	pilot_connect(socket->connector, dispatch_events, thiz, _pilot_server_udp_accept);
@@ -44,10 +54,7 @@ pilot_server_udp_create(struct pilot_application *application, int port)
 void
 pilot_server_udp_destroy(struct pilot_server_udp *thiz)
 {
-	_pilot_socket_destroy(&thiz->socket);
-	if (thiz->address != NULL)
-		free(thiz->address);
-	free(thiz);
+	pilot_socket_udp_destroy((struct pilot_socket_udp *)thiz);
 }
 
 struct pilot_socket_udp *
@@ -63,6 +70,9 @@ _pilot_socket_udp_create(struct pilot_application *application, char *address, i
 		thiz->address = malloc(strlen(address)+1);
 		strcpy(thiz->address, address);
 	}
+	thiz->socket.action.disconnect = _pilot_socket_udp_disconnect;
+	thiz->socket.action.read = _pilot_socket_udp_read;
+	thiz->socket.action.write = _pilot_socket_udp_write;
 
 	return thiz;
 }
@@ -85,7 +95,17 @@ void
 pilot_socket_udp_destroy(struct pilot_socket_udp *thiz)
 {
 	_pilot_socket_destroy(&thiz->socket);
+	if (thiz->address != NULL)
+		free(thiz->address);
 	free(thiz);
+}
+
+static int
+_pilot_socket_udp_disconnect( struct pilot_socket *thiz)
+{
+	LOG_DEBUG("%d", thiz->connector->fd);
+	pilot_socket_udp_destroy((struct pilot_socket_tcp *)thiz);
+	return -1;
 }
 
 static int
@@ -125,6 +145,7 @@ _pilot_server_udp_wait( struct pilot_server_udp *thiz)
 		thiz->socket.connector->fd = -1;
 		return -errno;
 	}
+	pilot_connect(thiz->socket.connector, dispatch_events, thiz, _pilot_socket_dataready);
 	return _pilot_socket_wait(&thiz->socket, (struct sockaddr *)&address, sizeof(address));
 }
 
@@ -171,18 +192,24 @@ _pilot_socket_udp_connect( struct pilot_socket_udp *thiz)
 	return _pilot_socket_connect(&(thiz->socket), (struct sockaddr *)&address, sizeof(address));
 }
 
-int
-_pilot_socket_udp_read(struct pilot_socket_udp *thiz, char *buff, int size)
+static int
+_pilot_socket_udp_read(struct pilot_socket *thiz, char *buff, int size)
 {
-	struct pilot_socket *socket = &thiz->socket;
-	return read(socket->connector->fd, buff, size);
+	int ret;
+	ret = recv(thiz->connector->fd, buff, size, 0);
+	LOG_DEBUG("on %d => %d bytes", thiz->connector->fd, ret);
+	if (ret <= 0)
+	{
+		LOG_DEBUG("emit disconnect %d %s", ret, strerror(errno));
+		pilot_emit(thiz->connector,disconnect, thiz->connector);
+	}
+	return ret;
 }
 
-int
-_pilot_socket_udp_write(struct pilot_socket_udp *thiz, char *buff, int size)
+static int
+_pilot_socket_udp_write(struct pilot_socket *thiz, char *buff, int size)
 {
-	struct pilot_socket *socket = &thiz->socket;
-	return write(socket->connector->fd, buff, size);
+	return send(thiz->connector->fd, buff, size, 0);
 }
 
 #ifdef TEST_SERVER
