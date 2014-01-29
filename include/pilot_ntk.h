@@ -21,6 +21,7 @@ struct pilot_socket
 		int (*write)(struct pilot_socket *, char *, int);
 		int (*disconnect)(struct pilot_socket *);
 	} action;
+	_pilot_signal(pilot_socket, dataready, struct pilot_socket *socket, int len);
 	char type;
 	char keepalive:1;
 	int layer;

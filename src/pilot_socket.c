@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <sys/select.h>
+#include <sys/ioctl.h>
 #include <unistd.h>
 #include <fcntl.h>
 
@@ -18,6 +19,7 @@ pilot_socket_create(struct pilot_application *application, int type)
 {
 	struct pilot_socket *thiz;
 	thiz = malloc(sizeof(*thiz));
+	LOG_DEBUG("%p", thiz);
 
 	_pilot_socket_init(thiz, application, type);
 	return thiz;
@@ -28,7 +30,7 @@ pilot_socket_dup(struct pilot_socket *socket)
 {
 	struct pilot_socket *thiz;
 	thiz = malloc(sizeof(*thiz));
-	memset(thiz, 0, sizeof(*thiz));
+	LOG_DEBUG("%p", thiz);
 
 	_pilot_socket_init(thiz, socket->application, socket->type);
 	thiz->action.disconnect = pilot_socket_destroy;
@@ -130,7 +132,6 @@ _pilot_socket_wait( struct pilot_socket *thiz, struct sockaddr *address, int add
 		thiz->connector->fd = -1;
 		return -errno;
 	}
-	/*
 	else if ((yes = fcntl(fd,F_GETFL,0)) < 0)
 	{
 		close(fd);
@@ -144,14 +145,26 @@ _pilot_socket_wait( struct pilot_socket *thiz, struct sockaddr *address, int add
 		thiz->connector->fd = -1;
 		return -errno;
 	}
-	*/
+
 	return 0;
+}
+
+int
+_pilot_socket_dataready( struct pilot_socket *thiz)
+{
+	int ret;
+	int value = 0;
+	ret = ioctl(thiz->connector->fd, FIONREAD, &value);
+	LOG_DEBUG("%d bytes", value);
+	pilot_emit(thiz, dataready, thiz, value);
+	return ret;
 }
 
 int
 _pilot_socket_connect( struct pilot_socket *thiz, struct sockaddr *address, int addsize)
 {
 	int fd = thiz->connector->fd;
+	int yes = 1;
 
 	if (fd < 0)
 	{
@@ -165,22 +178,39 @@ _pilot_socket_connect( struct pilot_socket *thiz, struct sockaddr *address, int 
 		thiz->connector->fd = -1;
 		return -errno;
 	}
-
+	if ((yes = fcntl(fd,F_GETFL,0)) < 0)
+	{
+		close(fd);
+		thiz->connector->fd = -1;
+		return -errno;
+	}
+	else if ( fcntl(fd,F_SETFL,yes | O_NONBLOCK) < 0)
+	{
+		LOG_DEBUG("error nonblock: %s", strerror(errno));
+		close(fd);
+		thiz->connector->fd = -1;
+		return -errno;
+	}
+	pilot_connect(thiz->connector, dispatch_events, thiz, _pilot_socket_dataready);
 	return 0;
 }
 
 int
 pilot_socket_read(struct pilot_socket *thiz, char *buff, int size)
 {
+	int ret = 0;
 	if (thiz->action.read)
 	{
-		return thiz->action.read(thiz, buff, size);
+		ret = thiz->action.read(thiz, buff, size);
 	}
 	else
 	{
 		LOG_DEBUG("no read function availlable");
+		ret = read(thiz->connector->fd, buff, size);
 	}
-	return read(thiz->connector->fd, buff, size);
+	if (ret < 0 && errno == EAGAIN )
+		ret = 0;
+	return ret;
 }
 
 int

@@ -34,6 +34,7 @@ pilot_server_tcp_create(struct pilot_application *application, int port)
 	struct pilot_server_tcp *thiz;
 	thiz = malloc(sizeof(*thiz));
 	struct pilot_socket *socket = &thiz->socket;
+	LOG_DEBUG("%p", thiz);
 
 	LOG_DEBUG("");
 	_pilot_socket_init(socket, application, PILOT_SERVER_TCP);
@@ -59,6 +60,7 @@ _pilot_socket_tcp_create(struct pilot_application *application, char *address, i
 {
 	struct pilot_socket_tcp *thiz;
 	thiz = malloc(sizeof(*thiz));
+	LOG_DEBUG("%p", thiz);
 
 	_pilot_socket_init(&thiz->socket, application, PILOT_SOCKET_TCP);
 	thiz->port = port;
@@ -93,6 +95,7 @@ pilot_socket_tcp_destroy(struct pilot_socket_tcp *thiz)
 	_pilot_socket_destroy(&thiz->socket);
 	if (thiz->address != NULL)
 		free(thiz->address);
+	LOG_DEBUG("%p", thiz);
 	free(thiz);
 }
 
@@ -145,10 +148,11 @@ _pilot_server_tcp_accept( struct pilot_server_tcp *thiz)
 	{
 		struct pilot_socket_tcp *newsocket;
 		newsocket = _pilot_socket_tcp_create(socket->application, thiz->address, thiz->port);
+	LOG_DEBUG("%p", newsocket);
 		newsocket->socket.type |= PILOT_SERVER;
 		newsocket->socket.connector->fd = fd;
-		//pilot_connect(newsocket->socket.connector, dispatch_events, thiz, _pilot_server_tcp_info);
 		pilot_emit(thiz, connection, (struct pilot_socket *)newsocket);
+		pilot_connect(newsocket->socket.connector, dispatch_events, newsocket, _pilot_socket_dataready);
 		if (!newsocket->socket.keepalive)
 		{
 			pilot_socket_tcp_destroy(newsocket);
@@ -189,7 +193,7 @@ _pilot_socket_tcp_read(struct pilot_socket *thiz, char *buff, int size)
 	int ret;
 	ret = read(thiz->connector->fd, buff, size);
 	LOG_DEBUG("%d", ret);
-	if (ret <= 0)
+	if (ret <= 0 && errno != EAGAIN)
 	{
 		LOG_DEBUG("emit disconnect %d", ret);
 		pilot_emit(thiz->connector,disconnect, thiz->connector);

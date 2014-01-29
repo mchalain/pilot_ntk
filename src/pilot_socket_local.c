@@ -143,6 +143,7 @@ _pilot_server_local_accept( struct pilot_server_local *thiz)
 		newsocket = _pilot_socket_local_create(socket->application, thiz->address);
 		newsocket->socket.type |= PILOT_SERVER;
 		newsocket->socket.connector->fd = fd;
+		pilot_connect(newsocket->socket.connector, dispatch_events, newsocket, _pilot_socket_dataready);
 		pilot_emit(thiz, connection, (struct pilot_socket *)newsocket);
 		if (!newsocket->socket.keepalive)
 		{
@@ -179,7 +180,7 @@ _pilot_socket_local_read(struct pilot_socket *thiz, char *buff, int size)
 	int ret;
 	ret = read(thiz->connector->fd, buff, size);
 	LOG_DEBUG("%d", ret);
-	if (ret <= 0)
+	if (ret <= 0 && errno != EAGAIN)
 	{
 		LOG_DEBUG("emit disconnect %d", ret);
 		pilot_emit(thiz->connector,disconnect, thiz->connector);

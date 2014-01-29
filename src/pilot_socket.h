@@ -13,5 +13,7 @@ int
 _pilot_socket_init(struct pilot_socket *thiz, struct pilot_application *application, int type);
 void
 _pilot_socket_destroy(struct pilot_socket *thiz);
+int
+_pilot_socket_dataready( struct pilot_socket *thiz);
 
 #endif

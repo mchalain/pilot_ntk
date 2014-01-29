@@ -19,6 +19,8 @@ main(int argc, char **argv)
 
 #ifdef TCP
 	client = pilot_socket_tcp_create(g_application, "127.0.0.1", 8080);
+#elif defined(UDP)
+	client = pilot_socket_udp_create(g_application, "127.0.0.1", 8080);
 #else
 	client = pilot_socket_local_create(g_application, "/tmp/pilot");
 #endif
