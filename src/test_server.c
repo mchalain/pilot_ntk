@@ -20,7 +20,7 @@ testlog(struct pilot_service *service, struct pilot_socket *socket, int value)
 	{
 		buff[0] = 0;
 		ret = pilot_socket_read(socket, buff, size);
-		LOG_DEBUG("%d %s", ret, buff);
+		write(1, buff, ret);
 	} while (ret > 0);
 	return ret;
 }
