@@ -126,6 +126,7 @@ pilot_socket_local_destroy(struct pilot_socket_local *);
 struct pilot_service
 {
 	struct pilot_socket *socket;
+	void *privatedata;
 	struct
 	{
 		int (*recieve_server)(struct pilot_service *thiz);
