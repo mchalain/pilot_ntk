@@ -46,27 +46,31 @@ pilot_service_destroy(struct pilot_service *thiz)
 static int
 _pilot_service_recieve_server(struct pilot_service *thiz)
 {
+	int ret = 0;
 	char buff[2];
 	if (thiz->action.recieve_server)
-		return thiz->action.recieve_server(thiz);
+	{
+		ret = thiz->action.recieve_server(thiz);
+	}
 	else
 	{
-		while (pilot_socket_read(thiz->socket, buff, sizeof(buff)) > 0);
+		while (thiz->socket->action.read(thiz->socket, buff, sizeof(buff)) > 0);
 		LOG_DEBUG("%s", buff);
 	}
-	return 0;
+	return ret;
 }
 
 static int
 _pilot_service_recieve_client(struct pilot_service *thiz)
 {
+	int ret = 0;
 	char buff[2];
 	if (thiz->action.recieve_client)
-		return thiz->action.recieve_client(thiz);
+		ret = thiz->action.recieve_client(thiz);
 	else
 	{
-		while (pilot_socket_read(thiz->socket, buff, sizeof(buff)) > 0);
+		while (thiz->socket->action.read(thiz->socket, buff, sizeof(buff)) > 0);
 		LOG_DEBUG("%s", buff);
 	}
-	return 0;
+	return ret;
 }
