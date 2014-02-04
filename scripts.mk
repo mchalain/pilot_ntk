@@ -19,17 +19,18 @@ quiet_cmd_ld_dlib=LD $*
  cmd_ld_dlib=$(Q)$(LD) $(LDFLAGS) $($*_LDFLAGS) -shared -Wl,-soname,$@ -o $@ $^ $(LIBRARY:%=-l%) $($*_LIBRARY:%=-l%)
 
 ifdef STATIC
-lib-static-target:=$(addprefix $(obj)/lib,$(addsuffix $(slib-ext:%=.%),$(lib-y)))
+lib-static-target:=$(addprefix $(obj)/lib,$(addsuffix $(slib-ext:%=.%),$(slib-y) $(lib-y)))
 else
+lib-static-target:=$(addprefix $(obj)/lib,$(addsuffix $(slib-ext:%=.%),$(slib-y)))
 lib-dynamic-target:=$(addprefix $(obj)/lib,$(addsuffix $(dlib-ext:%=.%),$(lib-y)))
 endif
 bin-target:=$(addprefix $(obj)/,$(addsuffix $(bin-ext:%=.%),$(bin-y)))
 
-targets=$(lib-dynamic-target)
+targets:=$(lib-static-target)
+targets+=$(lib-dynamic-target)
 targets+=$(bin-target)
-targets+=$(lib-static-target)
 
-target-objs:=$(foreach t, $(lib-y) $(bin-y), $(if $($(t)-objs), $(addprefix $(obj)/,$($(t)-objs)), $(obj)/$(t).o))
+target-objs:=$(foreach t, $(slib-y) $(lib-y) $(bin-y), $(if $($(t)-objs), $(addprefix $(obj)/,$($(t)-objs)), $(obj)/$(t).o))
 
 CFLAGS+=-I./$(src)
 LDFLAGS+=-L./$(obj)
