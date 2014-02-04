@@ -129,8 +129,8 @@ struct pilot_service
 	void *privatedata;
 	struct
 	{
-		int (*recieve_server)(struct pilot_service *thiz);
-		int (*recieve_client)(struct pilot_service *thiz);
+		int (*receive_server)(struct pilot_service *thiz);
+		int (*receive_client)(struct pilot_service *thiz);
 	} action;
 };
 

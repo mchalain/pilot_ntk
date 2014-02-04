@@ -29,7 +29,7 @@ testconnection(void *unused, struct pilot_socket *socket)
 {
 	struct pilot_service *service;
 	/// three solutions :
-	///  first : I want to recieve a request send an answer and close
+	///  first : I want to receive a request send an answer and close
 	///    I use this socket to read and write and return 0;
 	/*
 	 * char buff[256];
@@ -45,7 +45,7 @@ testconnection(void *unused, struct pilot_socket *socket)
 	/*
 	 * socket = pilot_socket_dup(socket);
 	 * service = pilot_service_create(socket);
-	 * service->action.recieve_server=testlog;
+	 * service->action.receive_server=testlog;
 	 */
 	///  third : I keep the socket alive
 	///    I set the keepalive flag to the socket,
