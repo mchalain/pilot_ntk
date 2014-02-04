@@ -11,10 +11,12 @@ dlib-ext=so
 
 include ./config
 
+#CFLAGS=-g
 CFLAGS=-g -DDEBUG
 STATIC=
 
 include $(src)/pilot_ntk.mk
+include ./services/http/http.mk
 
 include ./scripts.mk
 
