@@ -16,3 +16,8 @@ service_http_CFLAGS=$(CONFIG_PILOT_CFLAGS)
 service_http_LDFLAGS=$(CONFIG_PILOT_LDFLAGS)
 service_http_LIBRARY=$(CONFIG_PILOT_LIBRARY)
 $(foreach s, $(service_http-objs), $(eval $(s:%.o=%)_CFLAGS+=$(service_http_CFLAGS)) )
+
+bin-$(CONFIG_PILOT_SERVICES_BAD)+=http_test
+http_test_SOURCES=../services/http/test.c libhttpparser.a
+http_test-objs=$(http_test_SOURCES:%.c=%.o)
+http_test_LIBRARY=

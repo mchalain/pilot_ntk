@@ -1,4 +1,4 @@
-bin-$(CONFIG_PILOT_TEST)+=test_server test_client
+bin-$(CONFIG_PILOT_TEST)+=test_server test_client httpserver
 
 TYPE=TCP
 test_server_CFLAGS=$(CONFIG_PILOT_CFLAGS) -D$(TYPE)
@@ -8,3 +8,7 @@ test_server_LIBRARY=$(CONFIG_PILOT_LIBRARY)
 test_client_CFLAGS=$(CONFIG_PILOT_CFLAGS) -D$(TYPE)
 test_client_LDFLAGS=$(CONFIG_PILOT_LDFLAGS)
 test_client_LIBRARY=$(CONFIG_PILOT_LIBRARY)
+
+httpserver_CFLAGS=$(CONFIG_PILOT_CFLAGS)
+httpserver_LDFLAGS=$(CONFIG_PILOT_LDFLAGS)
+httpserver_LIBRARY=$(CONFIG_PILOT_LIBRARY) service_http

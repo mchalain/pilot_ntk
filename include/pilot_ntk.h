@@ -140,4 +140,7 @@ pilot_service_create(struct pilot_socket *socket);
 void
 pilot_service_destroy(struct pilot_service *thiz);
 
+struct pilot_service *
+pilot_servicehttp_create(struct pilot_socket *socket);
+
 #endif
