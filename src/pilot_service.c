@@ -40,6 +40,8 @@ pilot_service_destroy(struct pilot_service *thiz)
 {
 	pilot_disconnect(thiz->socket->connector, dispatch_events,thiz);
 	pilot_disconnect(thiz->socket->connector, disconnect,thiz);
+	if (thiz->action.destroy)
+		thiz->action.destroy(thiz);
 	free(thiz);
 }
 
@@ -57,6 +59,8 @@ _pilot_service_receive_server(struct pilot_service *thiz)
 		while (thiz->socket->action.read(thiz->socket, buff, sizeof(buff)) > 0);
 		LOG_DEBUG("%s", buff);
 	}
+	if (ret < 0)
+		pilot_emit(thiz->socket->connector, disconnect, thiz->socket->connector);
 	return ret;
 }
 

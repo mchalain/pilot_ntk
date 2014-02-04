@@ -129,6 +129,7 @@ struct pilot_service
 	void *privatedata;
 	struct
 	{
+		void (*destroy)(struct pilot_service *thiz);
 		int (*receive_server)(struct pilot_service *thiz);
 		int (*receive_client)(struct pilot_service *thiz);
 	} action;
