@@ -11,6 +11,8 @@ int
 _pilot_socket_open( struct pilot_socket *thiz);
 int
 _pilot_socket_init(struct pilot_socket *thiz, struct pilot_application *application, int type);
+int
+_pilot_socket_nonblock(struct pilot_socket *thiz);
 void
 _pilot_socket_destroy(struct pilot_socket *thiz);
 int

@@ -38,6 +38,7 @@ pilot_socket_dup(struct pilot_socket *socket)
 	thiz->action.write = socket->action.write;
 
 	thiz->connector->fd = dup(socket->connector->fd);
+	_pilot_socket_nonblock(thiz);
 	return thiz;
 }
 
@@ -132,21 +133,7 @@ _pilot_socket_wait( struct pilot_socket *thiz, struct sockaddr *address, int add
 		thiz->connector->fd = -1;
 		return -errno;
 	}
-	else if ((yes = fcntl(fd,F_GETFL,0)) < 0)
-	{
-		close(fd);
-		thiz->connector->fd = -1;
-		return -errno;
-	}
-	else if ( fcntl(fd,F_SETFL,yes | O_NONBLOCK) < 0)
-	{
-		LOG_DEBUG("error nonblock: %s", strerror(errno));
-		close(fd);
-		thiz->connector->fd = -1;
-		return -errno;
-	}
-
-	return 0;
+	return _pilot_socket_nonblock(thiz);
 }
 
 int
@@ -164,7 +151,7 @@ int
 _pilot_socket_connect( struct pilot_socket *thiz, struct sockaddr *address, int addsize)
 {
 	int fd = thiz->connector->fd;
-	int yes = 1;
+	int ret = 0;
 
 	if (fd < 0)
 	{
@@ -178,6 +165,17 @@ _pilot_socket_connect( struct pilot_socket *thiz, struct sockaddr *address, int 
 		thiz->connector->fd = -1;
 		return -errno;
 	}
+	ret = _pilot_socket_nonblock(thiz);
+	pilot_connect(thiz->connector, dispatch_events, thiz, _pilot_socket_dataready);
+	return ret;
+}
+
+int
+_pilot_socket_nonblock(struct pilot_socket *thiz)
+{
+	int fd = thiz->connector->fd;
+	int yes = 1;
+
 	if ((yes = fcntl(fd,F_GETFL,0)) < 0)
 	{
 		close(fd);
@@ -191,7 +189,6 @@ _pilot_socket_connect( struct pilot_socket *thiz, struct sockaddr *address, int 
 		thiz->connector->fd = -1;
 		return -errno;
 	}
-	pilot_connect(thiz->connector, dispatch_events, thiz, _pilot_socket_dataready);
 	return 0;
 }
 

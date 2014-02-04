@@ -34,7 +34,6 @@ pilot_server_tcp_create(struct pilot_application *application, int port)
 	struct pilot_server_tcp *thiz;
 	thiz = malloc(sizeof(*thiz));
 	struct pilot_socket *socket = &thiz->socket;
-	LOG_DEBUG("%p", thiz);
 
 	LOG_DEBUG("");
 	_pilot_socket_init(socket, application, PILOT_SERVER_TCP);
@@ -148,6 +147,7 @@ _pilot_server_tcp_accept( struct pilot_server_tcp *thiz)
 	{
 		struct pilot_socket_tcp *newsocket;
 		newsocket = _pilot_socket_tcp_create(socket->application, thiz->address, thiz->port);
+		_pilot_socket_nonblock(newsocket);
 	LOG_DEBUG("%p", newsocket);
 		newsocket->socket.type |= PILOT_SERVER;
 		newsocket->socket.connector->fd = fd;
