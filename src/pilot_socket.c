@@ -48,8 +48,8 @@ void
 _pilot_socket_destroy(struct pilot_socket *thiz)
 {		
 	LOG_DEBUG("");
-	close(thiz->connector->fd);
 	pilot_connector_destroy(thiz->connector);
+	close(thiz->connector->fd);
 }
 
 void
@@ -191,6 +191,16 @@ _pilot_socket_nonblock(struct pilot_socket *thiz)
 		return -errno;
 	}
 	return 0;
+}
+
+int pilot_socket_run(struct pilot_socket *thiz)
+{
+	int ret = 0;
+	do
+	{
+		ret = pilot_connector_wait(thiz->connector);
+	} while (ret >= 0);
+	return ret;
 }
 
 int
