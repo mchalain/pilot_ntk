@@ -149,7 +149,6 @@ _pilot_server_tcp_accept( struct pilot_server_tcp *thiz)
 		struct pilot_socket_tcp *newsocket;
 		newsocket = _pilot_socket_tcp_create(socket->application, thiz->address, thiz->port);
 		_pilot_socket_nonblock(newsocket);
-	LOG_DEBUG("%p", newsocket);
 		newsocket->socket.type |= PILOT_SERVER;
 		newsocket->socket.connector->fd = fd;
 		pilot_emit(thiz, connection, (struct pilot_socket *)newsocket);
