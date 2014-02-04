@@ -6,9 +6,9 @@
 #include <pilot_ntk.h>
 
 static int
-_pilot_service_receive_server(struct pilot_service *thiz);
+_pilot_service_receive_server(struct pilot_service *thiz, struct pilot_connector *connector);
 static int
-_pilot_service_receive_client(struct pilot_service *thiz);
+_pilot_service_receive_client(struct pilot_service *thiz, struct pilot_connector *connector);
 static int
 _pilot_service_disconnect(struct pilot_service *thiz);
 
@@ -46,26 +46,28 @@ pilot_service_destroy(struct pilot_service *thiz)
 }
 
 static int
-_pilot_service_receive_server(struct pilot_service *thiz)
+_pilot_service_receive_server(struct pilot_service *thiz, struct pilot_connector *connector)
 {
 	int ret = 0;
-	char buff[2];
 	if (thiz->action.receive_server)
 	{
 		ret = thiz->action.receive_server(thiz);
 	}
 	else
 	{
-		while (thiz->socket->action.read(thiz->socket, buff, sizeof(buff)) > 0);
+		char buff[2];
+		do
+		{
+			ret = thiz->socket->action.read(thiz->socket, buff, sizeof(buff));
+		} while ( ret > 0);
 		LOG_DEBUG("%s", buff);
 	}
-	if (ret < 0)
-		pilot_emit(thiz->socket->connector, disconnect, thiz->socket->connector);
+	connector->distribut = ret;
 	return ret;
 }
 
 static int
-_pilot_service_receive_client(struct pilot_service *thiz)
+_pilot_service_receive_client(struct pilot_service *thiz, struct pilot_connector *connector)
 {
 	int ret = 0;
 	char buff[2];
