@@ -45,7 +45,7 @@ $(obj)/%.o:$(src)/%.c
 	@$(call cmd,cc_o_c)
 
 .SECONDEXPANSION:
-$(lib-static-target): CFLAGS+=$($*_CFLAGS)
+$(lib-static-target): CFLAGS+=-fPIC $($*_CFLAGS)
 $(lib-static-target): $(obj)/lib%$(slib-ext:%=.%): $$(if $$(%-objs), $$(addprefix $(obj)/,$$(%-objs)), $(obj)/%.o)
 	@$(call cmd,ld_slib)
 
