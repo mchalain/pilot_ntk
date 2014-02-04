@@ -19,6 +19,7 @@ pilot_socket_create(struct pilot_application *application, int type)
 {
 	struct pilot_socket *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 	LOG_DEBUG("%p", thiz);
 
 	_pilot_socket_init(thiz, application, type);
@@ -30,6 +31,7 @@ pilot_socket_dup(struct pilot_socket *socket)
 {
 	struct pilot_socket *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 	LOG_DEBUG("%p", thiz);
 
 	_pilot_socket_init(thiz, socket->application, socket->type);
@@ -60,7 +62,6 @@ pilot_socket_destroy(struct pilot_socket *thiz)
 int
 _pilot_socket_init(struct pilot_socket *thiz, struct pilot_application *application, int type)
 {
-	memset(thiz, 0, sizeof(*thiz));
 	thiz->application = application;
 	thiz->type = type;
 	if ((type | PILOT_SERVER) == PILOT_SERVER_TCP)

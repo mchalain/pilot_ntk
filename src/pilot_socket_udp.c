@@ -33,6 +33,7 @@ pilot_server_udp_create(struct pilot_application *application, int port)
 {
 	struct pilot_server_udp *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 	struct pilot_socket *socket = &thiz->socket;
 
 	LOG_DEBUG("");
@@ -62,6 +63,7 @@ _pilot_socket_udp_create(struct pilot_application *application, char *address, i
 {
 	struct pilot_socket_udp *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 
 	_pilot_socket_init(&thiz->socket, application, PILOT_SOCKET_UDP);
 	thiz->port = port;

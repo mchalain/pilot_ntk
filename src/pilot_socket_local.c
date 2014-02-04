@@ -32,6 +32,7 @@ pilot_server_local_create(struct pilot_application *application, char *path)
 {
 	struct pilot_server_local *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 	struct pilot_socket *socket = &thiz->socket;
 
 	LOG_DEBUG("");
@@ -64,6 +65,7 @@ _pilot_socket_local_create(struct pilot_application *application, char *path)
 {
 	struct pilot_socket_local *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 
 	_pilot_socket_init(&thiz->socket, application, PILOT_SOCKET_LOCAL);
 	if (path != NULL)

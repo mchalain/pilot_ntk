@@ -33,6 +33,7 @@ pilot_server_tcp_create(struct pilot_application *application, int port)
 {
 	struct pilot_server_tcp *thiz;
 	thiz = malloc(sizeof(*thiz));
+	memset(thiz, 0, sizeof(*thiz));
 	struct pilot_socket *socket = &thiz->socket;
 
 	LOG_DEBUG("");
@@ -59,7 +60,7 @@ _pilot_socket_tcp_create(struct pilot_application *application, char *address, i
 {
 	struct pilot_socket_tcp *thiz;
 	thiz = malloc(sizeof(*thiz));
-	LOG_DEBUG("%p", thiz);
+	memset(thiz, 0, sizeof(*thiz));
 
 	_pilot_socket_init(&thiz->socket, application, PILOT_SOCKET_TCP);
 	thiz->port = port;
